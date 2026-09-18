@@ -20,6 +20,9 @@
 - [x] 验证文件不存在时使用 `try/except FileNotFoundError` 给出提示。
 - [x] 添加 `.gitignore`，忽略 `.venv/`、Python 缓存、编辑器配置和 `.env`。
 - [x] 将此前误提交的 `.venv` 从 Git 追踪中移除，且本地虚拟环境保留。
+- [x] 为词频统计加入常见英文标点清洗，并将统计结果保存为 `word_count.json`。
+- [x] 实现 `file_organizer.py` 的扫描与预览：使用 `pathlib`、`argparse` 和 `logging`，按扩展名显示计划目标路径，但不移动文件。
+- [x] 实现安全执行模式：`--apply` 才创建分类目录并移动文件；默认模式仍只预览；日志记录预览与实际移动。
 
 ## 当前代码与已掌握概念
 
@@ -32,7 +35,7 @@
 | 异常处理 | 文件不存在时程序不崩溃。 |
 | Git 忽略规则 | 已理解：`.gitignore` 不会自动忽略已追踪文件，需用 `git rm -r --cached` 停止追踪。 |
 
-## 当前练习：改进词频统计
+## 已完成练习：改进词频统计
 
 ### 目标
 
@@ -57,20 +60,66 @@ Python is useful. Python is readable, useful!
 
 统计结果应将 `useful.` 与 `useful!` 合并为 `useful: 2`。
 
+## 已完成练习：文件整理工具（扫描与预览）
+
+### 目标
+
+编写 `file_organizer.py`：扫描一个**演示目录**中的文件，按扩展名生成“计划移动到哪里”的预览。第一版绝不移动任何文件。
+
+### 要求
+
+1. 用 `pathlib.Path` 接收目录路径并遍历其中的直接文件；第一版不递归进入子目录。
+2. 将文件按扩展名分组；无扩展名的文件归入 `no_extension`。
+3. 在终端显示每个文件的原路径和计划目标路径，例如 `notes.txt -> txt/notes.txt`。
+4. 使用 `argparse`，使用户能执行 `python file_organizer.py demo_files` 指定演示目录。
+5. 使用 `logging` 同时把扫描过程记录到 `organizer.log`。
+6. 处理目录不存在、传入的不是目录、空目录三种情况。
+7. 不要对自己的真实文件夹执行，必须先创建 `demo_files` 测试目录。
+
+## 已完成练习：文件整理工具（安全执行）
+
+### 目标
+
+为工具增加 `--apply` 开关：默认始终预览；只有明确传入该开关才实际移动文件。遇到重名目标文件必须跳过，绝不覆盖。
+
+### 要求
+
+1. `python file_organizer.py demo_files` 仍只预览。
+2. `python file_organizer.py demo_files --apply` 才创建分类目录并移动文件。
+3. 目标文件已存在时输出并记录“跳过”，不覆盖、不重命名。
+4. 每次成功移动和每次跳过都写入 `organizer.log`。
+5. 在 `demo_files` 中测试，不对真实目录执行。
+
+## 当前练习：自动化测试与项目说明
+
+### 目标
+
+用标准库 `unittest` 为核心分类逻辑写自动化测试，并写 README，让其他人能安全运行项目。
+
+### 要求
+
+1. 新建 `test_file_organizer.py`，测试有扩展名、多个点的文件名和无扩展名三种情况。
+2. 执行 `python -m unittest -v`，所有测试通过。
+3. 新建 `README.md`，写明功能、虚拟环境、预览命令、`--apply` 命令和安全规则。
+4. 不测试真实文件夹；测试文件中只调用 `get_category()`，不调用会移动文件的函数。
+5. 将代码、测试、README、演示文件和学习档案提交；`organizer.log` 保持在 `.gitignore` 中，不提交。
+
 ## 下一次学习
 
-1. 先完成“改进词频统计”练习。
-2. 把 `word_count.py`、`word_count.json` 的内容和运行输出发给我检查。
-3. 通过后学习 `pathlib`、`argparse`、`logging` 的必要用法，并开始文件整理工具的“扫描与预览”功能。
+1. 完成单元测试与 README。
+2. 运行完整测试，并检查 Git 即将提交的文件列表。
+3. 通过后实现重名跳过的可重复测试，然后开始本月的基础算法练习。
 
 ## 本次记录
 
 - 日期：2026-09-18
 - 实际投入：约 1 小时（估计，待学习者确认）。
-- 交付：可运行的词频统计程序、样例文本、Git 仓库和 `.gitignore`。
-- 发现的问题：简单的 `split()` 不会去掉单词两端的标点。
+- 交付：可运行的词频统计程序、JSON 统计结果、样例文本、Git 仓库和 `.gitignore`。
+- 发现的问题：简单的 `split()` 不会去掉单词两端的标点；已通过清洗规则解决。
 - 已解决的问题：`.venv` 曾被提交；已通过 `git rm -r --cached .venv` 停止 Git 追踪，本地环境仍可使用。
-- 下次第一个具体任务：为词频统计加入标点清洗和 JSON 输出。
+- 新增交付：`file_organizer.py` 已成功预览 `csv`、`txt`、`jpg` 和 `no_extension` 四类文件，并在日志中记录完整计划。
+- 新增交付：在 `demo_files` 中用 `--apply` 成功移动四个演示文件，目标目录结构已由 PowerShell 递归检查确认。
+- 下次第一个具体任务：为 `get_category()` 写 `unittest` 测试，并完成项目 README。
 
 ## 每次汇报模板
 

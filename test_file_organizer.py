@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
-
+import json
 from tempfile import TemporaryDirectory
-from file_organizer import get_category, organize_files
+from file_organizer import get_category, organize_files, write_report
 
 
 
@@ -45,6 +45,25 @@ class OrganizeFilesTests(unittest.TestCase):
 
             self.assertTrue(source_file.exists())
             self.assertEqual(target_file.read_text(encoding="utf-8"), "旧内容")
+
+    def test_write_preview_report(self):
+        with TemporaryDirectory() as temp_dir:
+            source_dir = Path(temp_dir)
+            results = [
+                {
+                    "source": "notes.txt",
+                    "target": "txt/notes.txt",
+                    "status": "preview",
+                }
+            ]
+
+            write_report(source_dir, apply=False, results=results)
+
+            report_path = source_dir / "organizer_report.json"
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(report["mode"], "preview")
+            self.assertEqual(report["results"], results)
 
 
 if __name__ == "__main__":

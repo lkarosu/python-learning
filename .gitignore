@@ -16,5 +16,8 @@ __pycache__/
 # 本地环境变量
 .env
 
-# 日志
+# 日志文件
 *.log
+
+# 其他
+organizer_report.json

@@ -83,16 +83,22 @@ def organize_files(source_dir: Path, apply: bool) -> list[dict[str, str]]:
     return results
 
 
-def write_report(
-    source_dir: Path,
-    apply: bool,
-    results: list[dict[str, str]],
-) -> None:
+def write_report(source_dir: Path, apply: bool, results: list[dict[str, str]]) -> None:
     """将本次预览或执行结果保存为 JSON 报告。"""
+    summary = {
+        "preview": 0,
+        "moved": 0,
+        "skipped": 0,
+    }
     report = {
         "mode": "apply" if apply else "preview",
         "results": results,
+        "summary": summary,
     }
+
+    for result in results:
+        status = result["status"]
+        summary[status] += 1
 
     report_path = source_dir / "organizer_report.json"
 

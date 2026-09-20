@@ -41,8 +41,13 @@ class OrganizeFilesTests(unittest.TestCase):
             source_file = source_dir / "notes.txt"
             source_file.write_text("新内容", encoding="utf-8")
 
-            organize_files(source_dir, apply=True)
+            results = organize_files(source_dir, apply=True)
 
+            write_report(source_dir, apply=True, results=results)
+
+            report_path = source_dir / "organizer_report.json"
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["summary"]["skipped"], 1)
             self.assertTrue(source_file.exists())
             self.assertEqual(target_file.read_text(encoding="utf-8"), "旧内容")
 
@@ -54,7 +59,12 @@ class OrganizeFilesTests(unittest.TestCase):
                     "source": "notes.txt",
                     "target": "txt/notes.txt",
                     "status": "preview",
-                }
+                },
+                {
+                    "source": "notes.txt",
+                    "target": "txt/notes.txt",
+                    "status": "preview",
+                },
             ]
 
             write_report(source_dir, apply=False, results=results)
@@ -64,6 +74,7 @@ class OrganizeFilesTests(unittest.TestCase):
 
             self.assertEqual(report["mode"], "preview")
             self.assertEqual(report["results"], results)
+            self.assertEqual(report["summary"], {"preview": 2, "moved": 0, "skipped": 0})
 
 
 if __name__ == "__main__":

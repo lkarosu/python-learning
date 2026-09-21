@@ -51,6 +51,22 @@ class OrganizeFilesTests(unittest.TestCase):
             self.assertTrue(source_file.exists())
             self.assertEqual(target_file.read_text(encoding="utf-8"), "旧内容")
 
+    def test_apply_moves_file(self):
+        with TemporaryDirectory() as temp_dir:
+            source_dir = Path(temp_dir)
+            source_file = source_dir / "report.pdf"
+            source_file.write_text("测试内容", encoding="utf-8")
+
+            results = organize_files(source_dir, apply=True)
+
+            write_report(source_dir, apply=True, results=results)
+
+            report_path = source_dir / "organizer_report.json"
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+            self.assertEqual(report["summary"], {"preview": 0, "moved": 1, "skipped": 0})
+            self.assertFalse(source_file.exists())
+            self.assertTrue((source_dir / "pdf" / "report.pdf").exists())
+
     def test_write_preview_report(self):
         with TemporaryDirectory() as temp_dir:
             source_dir = Path(temp_dir)

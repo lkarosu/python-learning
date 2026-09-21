@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import json
 from tempfile import TemporaryDirectory
-from file_organizer import get_category, organize_files, write_report
+from file_organizer import get_category, organize_files, write_report, create_status_summary
 
 
 
@@ -80,7 +80,7 @@ class OrganizeFilesTests(unittest.TestCase):
                     "source": "notes.txt",
                     "target": "txt/notes.txt",
                     "status": "preview",
-                },
+                },       
             ]
 
             write_report(source_dir, apply=False, results=results)
@@ -92,6 +92,16 @@ class OrganizeFilesTests(unittest.TestCase):
             self.assertEqual(report["results"], results)
             self.assertEqual(report["summary"], {"preview": 2, "moved": 0, "skipped": 0})
 
+    def test_create_status_summary(self):
+        results = [
+            {"status": "preview"},
+            {"status": "moved"},
+            {"status": "skipped"},
+            {"status": "preview"},
+        ]
+        expected_summary = {"preview": 2, "moved": 1, "skipped": 1}
+
+        self.assertEqual(create_status_summary(results), expected_summary)
 
 if __name__ == "__main__":
     unittest.main()

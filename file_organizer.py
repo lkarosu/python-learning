@@ -27,6 +27,16 @@ def relative_path(path: Path, source_dir: Path) -> str:
     """生成适合写入 JSON 的相对路径。"""
     return path.relative_to(source_dir).as_posix()
 
+def create_status_summary(results: list[dict[str, str]]) -> dict[str, int]:
+    """统计每个状态的结果数量。"""
+    summary = {
+        "preview": 0,
+        "moved": 0,
+        "skipped": 0,
+    }
+    for result in results:
+        summary[result["status"]] += 1
+    return summary
 
 def organize_files(source_dir: Path, apply: bool) -> list[dict[str, str]]:
     """预览或执行文件整理，并返回每个文件的处理结果。"""
@@ -85,20 +95,12 @@ def organize_files(source_dir: Path, apply: bool) -> list[dict[str, str]]:
 
 def write_report(source_dir: Path, apply: bool, results: list[dict[str, str]]) -> None:
     """将本次预览或执行结果保存为 JSON 报告。"""
-    summary = {
-        "preview": 0,
-        "moved": 0,
-        "skipped": 0,
-    }
+    summary = create_status_summary(results)
     report = {
         "mode": "apply" if apply else "preview",
         "results": results,
         "summary": summary,
     }
-
-    for result in results:
-        status = result["status"]
-        summary[status] += 1
 
     report_path = source_dir / "organizer_report.json"
 
@@ -107,6 +109,8 @@ def write_report(source_dir: Path, apply: bool, results: list[dict[str, str]]) -
 
     print(f"\n报告已保存到：{report_path}")
     logging.info("报告已保存：%s", report_path)
+
+
 
 
 def parse_args() -> argparse.Namespace:

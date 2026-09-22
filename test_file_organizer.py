@@ -63,7 +63,7 @@ class OrganizeFilesTests(unittest.TestCase):
 
             report_path = source_dir / "organizer_report.json"
             report = json.loads(report_path.read_text(encoding="utf-8"))
-            self.assertEqual(report["summary"], {"preview": 0, "moved": 1, "skipped": 0})
+            self.assertEqual(report["summary"], {"preview": 0, "moved": 1, "skipped": 0, "error": 0})
             self.assertFalse(source_file.exists())
             self.assertTrue((source_dir / "pdf" / "report.pdf").exists())
 
@@ -90,18 +90,50 @@ class OrganizeFilesTests(unittest.TestCase):
 
             self.assertEqual(report["mode"], "preview")
             self.assertEqual(report["results"], results)
-            self.assertEqual(report["summary"], {"preview": 2, "moved": 0, "skipped": 0})
+            self.assertEqual(report["summary"], {"preview": 2, "moved": 0, "skipped": 0, "error": 0})
 
     def test_create_status_summary(self):
         results = [
             {"status": "preview"},
             {"status": "moved"},
             {"status": "skipped"},
-            {"status": "preview"},
+            {"status": "error"},
         ]
-        expected_summary = {"preview": 2, "moved": 1, "skipped": 1}
+        expected_summary = {"preview": 1, "moved": 1, "skipped": 1, "error": 1}
 
         self.assertEqual(create_status_summary(results), expected_summary)
+
+    def test_organize_files_with_existing_non_directory_target(self):
+        with TemporaryDirectory() as temp_dir:
+            source_dir = Path(temp_dir)
+
+            # 创建一个普通文件而不是目录
+            category_file = source_dir / "txt"
+            category_file.write_text("这是一个普通文件，而不是目录。", encoding="utf-8")
+
+            source_file = source_dir / "notes.txt"
+            source_file.write_text("学习笔记", encoding="utf-8")
+
+            results = organize_files(source_dir, apply=True)
+
+            write_report(source_dir, apply=True, results=results)
+
+            report_path = source_dir / "organizer_report.json"
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(report["summary"]["error"], 1)
+            self.assertTrue(source_file.exists())
+            self.assertTrue(category_file.exists())
+            # 两个文件的文本内容未变
+            self.assertEqual(category_file.read_text(encoding="utf-8"), "这是一个普通文件，而不是目录。")
+            self.assertEqual(source_file.read_text(encoding="utf-8"), "学习笔记")
+
+            statuses = {result["source"]: result["status"] for result in results}
+            self.assertEqual(statuses, {"notes.txt": "error", "txt": "skipped"})
+            self.assertEqual(
+                report["summary"],
+                {"preview": 0, "moved": 0, "skipped": 1, "error": 1},
+            )
 
 if __name__ == "__main__":
     unittest.main()

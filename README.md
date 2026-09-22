@@ -9,6 +9,7 @@
 - 默认仅预览，不移动任何文件。
 - 传入 `--apply` 后才创建分类目录并实际移动文件。
 - 目标路径已存在同名文件时跳过，不覆盖原文件。
+- 若分类目录名已被普通文件占用，保留所有相关文件，不创建或覆盖该分类目录，并在报告中记录错误。
 - 在目标目录生成 `organizer_report.json`，记录逐文件结果和数量汇总。
 - 在当前运行目录生成 `organizer.log`，记录扫描、预览、移动和跳过事件。
 
@@ -61,6 +62,7 @@ python file_organizer.py demo_files --apply
 - `archive.2026.zip` 归入 `zip`；只使用最后一个扩展名。
 - `README` 归入 `no_extension`。
 - 如果 `txt/notes.txt` 已存在，根目录的 `notes.txt` 会被标记为 `skipped`，不会覆盖或重命名任一文件。
+- 如果根目录已有普通文件 `txt`，而 `notes.txt` 需要归入 `txt/`，则不会将 `txt` 覆盖或替换为目录：`txt` 会标记为 `skipped`，`notes.txt` 会标记为 `error`，两个文件均保留不变。该规则在预览和执行模式下都生效。
 - 请先在演示目录中预览，确认结果后再使用 `--apply`；不要直接对重要目录执行移动。
 
 ## 报告与日志
@@ -73,7 +75,8 @@ python file_organizer.py demo_files --apply
   "summary": {
     "preview": 0,
     "moved": 1,
-    "skipped": 0
+    "skipped": 0,
+    "error": 0
   },
   "results": [
     {
@@ -90,12 +93,13 @@ python file_organizer.py demo_files --apply
 - `preview`：仅展示计划，不移动文件。
 - `moved`：已成功移动文件。
 - `skipped`：目标位置已有同名文件，已安全跳过。
+- `error`：无法完成整理，例如所需分类目录名已被普通文件占用；不会改动相关文件。
 
 `organizer.log` 记录运行过程。日志与报告均在 `.gitignore` 中忽略，不会被提交到仓库。
 
 ## 测试
 
-当前共有 7 项自动化测试。
+当前共有 9 项自动化测试。
 使用标准库 `unittest` 运行全部测试：
 
 ```powershell
@@ -108,6 +112,7 @@ python -m unittest -v
 - 预览不会移动文件。
 - 实际移动文件与报告汇总。
 - 重名文件不覆盖，并在报告中记录跳过状态。
+- 分类目录名被普通文件占用时保留文件，并记录 `error` 状态。
 - 预览报告的内容与数量汇总。
 
 ## 项目结构

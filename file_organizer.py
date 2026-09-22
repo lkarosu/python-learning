@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Literal, TypedDict
 
 
-Status = Literal["preview", "moved", "skipped"]
+Status = Literal["preview", "moved", "skipped", "error"]
 
 
 class FileResult(TypedDict):
@@ -43,6 +43,7 @@ def create_status_summary(results: list[FileResult]) -> dict[str, int]:
         "preview": 0,
         "moved": 0,
         "skipped": 0,
+        "error": 0,
     }
     for result in results:
         summary[result["status"]] += 1
@@ -69,13 +70,29 @@ def organize_files(source_dir: Path, apply: bool) -> list[FileResult]:
     else:
         print("以下是整理预览；目前不会移动任何文件：")
 
+    #files
+    #→ 收集所有文件会使用到的分类名
+    #→ 找出“文件名恰好等于某个分类名”的普通文件
+    categories = set(get_category(path) for path in files)
+
     for file_path in sorted(files, key=lambda path: path.name.lower()):
         category = get_category(file_path)
+        category_dir = source_dir / category
         target_path = source_dir / category / file_path.name
 
         status: Status
 
-        if target_path.exists():
+        # 当前 file_path 是被占用分类路径文件 → skipped
+        if file_path.name in categories:
+            print(f"跳过（文件名与分类名冲突）：{file_path.name}")
+            logging.warning("跳过，文件名与分类名冲突：%s", file_path)
+            status = "skipped"
+        # category_dir 存在 且 category_dir 不是目录
+        elif category_dir.exists() and not category_dir.is_dir():
+            print(f"错误（目标已存在且不是目录）：{file_path.name}")
+            logging.error("错误，目标已存在：%s", target_path)
+            status = "error"
+        elif target_path.exists():
             print(f"跳过（目标已存在）：{file_path.name}")
             logging.warning("跳过，目标已存在：%s", target_path)
             status = "skipped"

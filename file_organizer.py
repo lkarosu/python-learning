@@ -2,6 +2,16 @@ import argparse
 import json
 import logging
 from pathlib import Path
+from typing import Literal, TypedDict
+
+
+Status = Literal["preview", "moved", "skipped"]
+
+
+class FileResult(TypedDict):
+    source: str
+    target: str
+    status: Status
 
 
 def configure_logging() -> None:
@@ -27,7 +37,7 @@ def relative_path(path: Path, source_dir: Path) -> str:
     """生成适合写入 JSON 的相对路径。"""
     return path.relative_to(source_dir).as_posix()
 
-def create_status_summary(results: list[dict[str, str]]) -> dict[str, int]:
+def create_status_summary(results: list[FileResult]) -> dict[str, int]:
     """统计每个状态的结果数量。"""
     summary = {
         "preview": 0,
@@ -38,7 +48,7 @@ def create_status_summary(results: list[dict[str, str]]) -> dict[str, int]:
         summary[result["status"]] += 1
     return summary
 
-def organize_files(source_dir: Path, apply: bool) -> list[dict[str, str]]:
+def organize_files(source_dir: Path, apply: bool) -> list[FileResult]:
     """预览或执行文件整理，并返回每个文件的处理结果。"""
     report_path = source_dir / "organizer_report.json"
     files = [
@@ -47,7 +57,7 @@ def organize_files(source_dir: Path, apply: bool) -> list[dict[str, str]]:
         if path.is_file() and path != report_path
     ]
 
-    results = []
+    results: list[FileResult] = []
 
     if not files:
         print("目录中没有可整理的文件。")
@@ -63,37 +73,36 @@ def organize_files(source_dir: Path, apply: bool) -> list[dict[str, str]]:
         category = get_category(file_path)
         target_path = source_dir / category / file_path.name
 
-        result = {
-            "source": relative_path(file_path, source_dir),
-            "target": relative_path(target_path, source_dir),
-        }
+        status: Status
 
         if target_path.exists():
             print(f"跳过（目标已存在）：{file_path.name}")
             logging.warning("跳过，目标已存在：%s", target_path)
-            result["status"] = "skipped"
-            results.append(result)
-            continue
-
-        if not apply:
+            status = "skipped"
+        elif not apply:
             print(f"{file_path.name} -> {relative_path(target_path, source_dir)}")
             logging.info("预览：%s -> %s", file_path, target_path)
-            result["status"] = "preview"
-            results.append(result)
-            continue
+            status = "preview"
+        else:
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            file_path.rename(target_path)
 
-        target_path.parent.mkdir(parents=True, exist_ok=True)
-        file_path.rename(target_path)
+            print(f"已移动：{file_path.name} -> {relative_path(target_path, source_dir)}")
+            logging.info("已移动：%s -> %s", file_path, target_path)
+            status = "moved"
 
-        print(f"已移动：{file_path.name} -> {relative_path(target_path, source_dir)}")
-        logging.info("已移动：%s -> %s", file_path, target_path)
-        result["status"] = "moved"
+        result: FileResult = {
+            "source": relative_path(file_path, source_dir),
+            "target": relative_path(target_path, source_dir),
+            "status": status,
+        }
+
         results.append(result)
 
     return results
 
 
-def write_report(source_dir: Path, apply: bool, results: list[dict[str, str]]) -> None:
+def write_report(source_dir: Path, apply: bool, results: list[FileResult]) -> None:
     """将本次预览或执行结果保存为 JSON 报告。"""
     summary = create_status_summary(results)
     report = {

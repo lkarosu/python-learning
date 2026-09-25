@@ -2,18 +2,23 @@
 
 > 路线：Python 开发基础 → 后端服务 → AI 应用项目 → 实习与校招
 > 依据：`D:\\cs road\\CS研究生就业学习计划_2026-2029.md`
-> 最后校准：2026-09-22。更换聊天窗口后，让助教先读取本文件；需要完整过程时再查阅 `LEARNING_HISTORY.md`。
+> 最后校准：2026-09-25。交接规则：每次交接只读取本文件；学习历史仅在用户明确要求归档时，将本文件内容追加到 LEARNING_HISTORY.md。
 
 ## 当前任务（唯一）
 
-文件整理工具的首个版本已完成并准备提交。提交后进行一次简短复盘：说明预览、移动、跳过和错误如何流入 JSON 报告；随后转入资料管理服务所需的 Python 模块、HTTP 与 FastAPI 基础。
+文件整理工具边界改动已提交（提交号 4a384ab），首轮口头复盘和 Python 模块练习均已完成。下一步学习 HTTP 请求／响应，再进入 FastAPI 基础。
 
 ## 最近验收
 
 - 新增并验证“分类目录名被普通文件占用”的边界：根目录 `txt` 是普通文件、根目录 `notes.txt` 需归入 `txt/` 时，`notes.txt` 为 `error`，`txt` 为 `skipped`，两者内容均不变。
 - `Status` 和报告 `summary` 均新增 `error`；README 已同步状态说明、安全规则和测试数。
 - `python -m unittest -v`：9 项测试通过；`git diff --check` 通过。
-- 本次改动待提交：`file_organizer.py`、`test_file_organizer.py`、`README.md`、本学习档案。
+- 文件整理工具边界处理、测试与 README 已提交，提交号 4a384ab。模块练习文件 module_practice/summary_tools.py 和 demo.py 已编写。运行 demo.py 输出 preview: 1、moved: 1、skipped: 1、error: 0；在 module_practice 目录执行 python -c "import demo" 无输出，符合入口保护预期。
+
+- 2026-09-25 口头复盘：能独立说出 --apply 参数传递、results 初始化、分支设定状态、逐文件追加及调用报告写入的主链路；经反馈补全每条记录的字段、JSON 汇总结构与 error 的具体触发条件。此次属于经反馈补全的解释证据，不记为完整独立复述。
+- 实现边界：当前 error 只覆盖分类目录路径被普通文件占用；mkdir／rename 等操作抛出的异常没有转成报告记录，可能中断报告写入。
+
+- Python 模块练习：在反馈指出输入记录应使用 status 字段后，独立调整 summarize() 与演示数据；直接运行得到四类状态计数，导入 demo 无输出。实现与运行行为已验证；学习者能准确说明直接运行时 __name__ 为 "__main__"，导入时为模块名 demo，因此入口保护内的演示代码不会执行。
 
 ## 能力证据（按证据而非题目数量）
 

@@ -1,8 +1,8 @@
-# Python 学习进度档案
+# Python 学习历史
 
 > 目标路线：Python 开发基础 → 后端服务 → AI 应用项目 → 实习与校招  
 > 学习计划来源：`D:\cs road\CS研究生就业学习计划_2026-2029.md`  
-> 使用方式：每次学习结束后更新“本次记录”和“下一次学习”；更换聊天窗口时，把本文件内容发给我，或直接告诉我先阅读它。
+> 使用方式：本文件仅作按需归档。只有用户明确要求归档时，才将当时的 LEARNING_PROGRESS.md 完整追加到本文件并标注日期；日常学习记录与下一步任务只更新 LEARNING_PROGRESS.md；交接窗口只读取 LEARNING_PROGRESS.md。
 
 ## 当前阶段
 
@@ -695,7 +695,7 @@ nums = [2, 7, 11, 15], target = 9
 - [x] 非目录路径：退出码 1。
 - [x] 空目录：退出码 0，生成全 0 的预览报告。
 
-## 当前练习：Python 模块——`__name__` 与导入安全
+## 已完成练习：Python 模块——__name__ 与导入安全
 
 ### 目标
 
@@ -771,7 +771,7 @@ nums = [2, 7, 11, 15], target = 9
 - [x] 已将三种分支重构为“确定状态后统一创建结果”，8 项运行时测试通过。
 - [x] 类型标注已补齐：`organize_files()` 的返回值与 `results` 局部变量、`create_status_summary()` 参数、`write_report()` 参数均使用 `FileResult`；`status` 局部变量标为 `Status`。
 
-## 当前练习：类与对象——`TypedDict` 和 `dataclass`
+## 待学习练习：类与对象——TypedDict 和 dataclass
 
 ### 目标
 
@@ -788,11 +788,21 @@ nums = [2, 7, 11, 15], target = 9
 
 ## 下一次学习
 
-1. 闭卷复做两数之和；不看旧代码，先写思路和测试。
-2. 完成三种命令行边界验证。
-3. 区分 `TypedDict` 与 `dataclass`，再决定项目是否需要引入真实对象。
+1. 独立完成模块练习：在 module_practice/summary_tools.py 实现 summarize(results)，统计 preview、moved、skipped、error，缺少的状态也返回 0。
+2. 在 module_practice/demo.py 导入并调用该函数；让演示代码只在直接运行时执行。运行脚本，并验证导入 demo 不会自动打印。
+3. 模块练习完成后，学习 HTTP 请求与响应的组成（方法、路径、头、请求体、状态码和 JSON），再用 FastAPI 实现一个最小接口。
 
 ## 本次记录
+
+- 日期：2026-09-25
+- 实际投入：未统计。
+- 完成内容：学习者用自己的话复盘了 --apply 参数传递、organize_files() 中的 results 初始化、分支确定状态、构造并追加结果、调用 write_report() 的流程。
+- 反馈与校准：补充了单条结果包含 source、target、status；报告包含 mode、results、summary，汇总由结果列表统计；预览模式也可能产生 skipped 或 error。
+- 边界理解：本实现的 error 分支表示分类目录路径已被普通文件占用；移动操作中的底层文件系统异常没有被捕获并写入报告。该次复盘经反馈补全，暂不记为完整独立掌握。
+- 练习状态：module_practice/summary_tools.py 已创建但仍为空；summarize 实现、demo.py 和导入验证待完成。本次未运行项目测试。
+- 下一次学习：完成 summary_tools.py 与 demo.py，解释直接运行和导入时的行为；随后进入 HTTP 与 FastAPI 基础。
+
+## 历史累计记录
 
 - 日期：2026-09-18
 - 实际投入：约 1 小时（估计，待学习者确认）。
